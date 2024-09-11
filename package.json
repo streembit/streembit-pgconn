@@ -12,6 +12,7 @@
     "name": ""
   },
   "devDependencies": {
+    "chai": "^4.2.0",
     "eslint": "^8.21.0"
   },
   "eslintConfig": {},

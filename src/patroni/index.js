@@ -159,7 +159,16 @@ class PatroniConn extends EventEmitter {
     getserver(isreplica=false) {
         for (let i = 0; i < this.Servers.length; i++) {
             if (this.Servers[i].IsReplica == isreplica) {
-                return this.Servers[i];
+                if (isreplica) {
+                    return this.Servers[i];
+                }
+                else {
+                    // check if the server is really a master
+                    if (this.Servers[i].IsMaster === true) {
+                        return this.Servers[i];
+                    }                    
+                }
+                
             }
         }
     }
@@ -172,8 +181,14 @@ class PatroniConn extends EventEmitter {
 
             // get the write server
             const srv = this.getserver(isreplica);
+            if (!srv) {
+                return this.emit(EVENT_ERROR, "Unable to find a server at execute()");
+            }
+
             const result = await srv.ExecuteQuery(query, params);
             callback(null, result);
+
+            //
         }
         catch (err) {
             if (callback && (typeof callback == "function")) {
@@ -186,7 +201,7 @@ class PatroniConn extends EventEmitter {
     }
 
     async execute_read(query, params, callback) {
-        console.log("Using the replica server")
+        // console.log("Using the replica server")
         this.execute(query, params, callback, true);
     }
   
@@ -242,8 +257,32 @@ class PatroniConn extends EventEmitter {
     }
 
     async init(servers, dbport, healthport, protocol, dbuser, dbpass, database) {
-        if (!Array.isArray(servers) || servers.length < 3) {
+        if (!servers || !Array.isArray(servers) || servers.length < 3) {
             throw new Error("Invalid patroni servers parameter")
+        }
+
+        if (!dbport) {
+            throw new Error("Invalid patroni database port parameter")
+        }
+
+        if (!healthport) {
+            throw new Error("Invalid patroni database healthport parameter")
+        }
+
+        if (!protocol) {
+            throw new Error("Invalid patroni database protocol parameter")
+        }
+
+        if (!dbuser) {
+            throw new Error("Invalid patroni database dbuser parameter")
+        }
+
+        if (!dbpass) {
+            throw new Error("Invalid patroni database dbpass parameter")
+        }
+
+        if (!database) {
+            throw new Error("Invalid patroni database name parameter")
         }
 
         this.servers = servers;
