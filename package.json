@@ -16,6 +16,17 @@
   },
   "eslintConfig": {},
   "dependencies": {
+    "mocha": "^10.7.3",
     "pg": "^8.12.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "bugs": {
+    "url": "https://github.com/streembit/streembit-pgconn/issues"
+  },
+  "homepage": "https://github.com/streembit/streembit-pgconn#readme",
+  "directories": {
+    "test": "test"
   }
 }

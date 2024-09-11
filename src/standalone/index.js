@@ -8,9 +8,6 @@ class StandAloneConn {
         if (enforcer !== singletonEnforcer) {
             throw "Cannot construct singleton";
         }
-
-        console.log ("StandAloneConn constructor")
-
         this.conn = 0;
     }
 
