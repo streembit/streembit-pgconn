@@ -135,3 +135,7 @@ dist
 *.njsproj
 /app.js
 /package-lock.json
+
+bin/*
+obj/*
+

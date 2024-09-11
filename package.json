@@ -1,0 +1,21 @@
+{
+  "name": "streembit-pgconn",
+  "version": "1.0.1",
+  "description": "Postgresql connection handler",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/streembit/streembit-pgconn.git"
+  },
+  "main": "index.js",
+  "author": {
+    "name": ""
+  },
+  "devDependencies": {
+    "eslint": "^8.21.0"
+  },
+  "eslintConfig": {},
+  "dependencies": {
+    "pg": "^8.12.0"
+  }
+}
