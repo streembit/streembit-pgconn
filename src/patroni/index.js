@@ -53,11 +53,8 @@ class PatroniServer extends PostgreSQLHandler {
     }
 
     validatechk(state, role) {
-        if (!state || !role) {
-            this.PoolIsInvalid = true;
-            this.IsRunning = false;
-            return false;
-        }
+
+        this.IsRunning = false;
 
         const new_isrunning_state = state === STATE_RUNNING;
         if (this.IsRunning != new_isrunning_state) {
@@ -123,7 +120,7 @@ class PatroniServer extends PostgreSQLHandler {
             });
             const data = await response.json()
             if (data) {
-                return this.validatechk(data.sate, data.role);
+                return this.validatechk(data.state, data.role);
             }
             else {
                 return false;
@@ -159,14 +156,23 @@ class PatroniConn extends EventEmitter {
         return this[singleton];
     }
 
+    getserver(isreplica=false) {
+        for (let i = 0; i < this.Servers.length; i++) {
+            if (this.Servers[i].IsReplica == isreplica) {
+                return this.Servers[i];
+            }
+        }
+    }
 
-    async execute(query, params, callback) {
+    async execute(query, params, callback, isreplica = false) {
         try {
             if (!callback || (typeof callback !== "function")) {
                 return this.emit(EVENT_ERROR, "Invalid callback function at execute()");
             }
 
-            const result = await this.Servers[0].ExecuteQuery(query, params);
+            // get the write server
+            const srv = this.getserver(isreplica);
+            const result = await srv.ExecuteQuery(query, params);
             callback(null, result);
         }
         catch (err) {
@@ -177,6 +183,11 @@ class PatroniConn extends EventEmitter {
                 this.emit(EVENT_ERROR, err);
             }
         }
+    }
+
+    async execute_read(query, params, callback) {
+        console.log("Using the replica server")
+        this.execute(query, params, callback, true);
     }
   
     async initpools() {
@@ -215,21 +226,6 @@ class PatroniConn extends EventEmitter {
             target.isRunning = false
         }
     }
-
-    //async chkinit() {
-    //    for await (const _nothing of setInterval(CHKINTERVAL, null)) {
-    //        //console.log(`chk timer ${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')}`);
-    //        for (let i = 0; i < this.Servers.length; i++) {
-    //            try {
-    //                this.Servers[i].chksrv();
-    //            }
-    //            catch (err) {
-    //                this.emit(EVENT_ERROR, err);
-    //            }
-    //        }
-    //    }
-    //}
-
 
     async srvsinits() {
         for (let i = 0; i < this.Servers.length; i++) {
