@@ -2,7 +2,7 @@
 
 const EventEmitter = require('events');
 const PostgreSQLHandler = require("../postgre")
-//const { setInterval } = require("timers/promises");
+
 
 let singleton = Symbol();
 let singletonEnforcer = Symbol();
@@ -10,15 +10,15 @@ let singletonEnforcer = Symbol();
 const ROLE_REPLICA = "replica";
 const ROLE_MASTER = "master";
 const STATE_RUNNING = "running";
-const EVENT_INITIALIZED = "initialized";
+const EVENT_SRV_INITIALIZED = "srvinitialized";
 const EVENT_POOL = "poolevent";
 const EVENT_ERROR = "error";
 const CHKINTERVAL = 5000;
 
 class PatroniServer extends PostgreSQLHandler {
-    constructor(host, dbport, healthport, protocol, dbuser, dbpass, database) {
+    constructor(host, dbport, healthport, dbuser, dbpass, database, protocol) {
 
-        super(host, dbport, dbuser, dbpass, database);
+        super(host, dbport, dbuser, dbpass, database, protocol);
 
         this.Protocol = protocol;
         this.HealthPort = healthport;
@@ -146,7 +146,6 @@ class PatroniConn extends EventEmitter {
         super();   
 
         this.Servers = [];
-        //this.ChkTimerId = undefined;
     }
 
     static get instance() {
@@ -229,19 +228,6 @@ class PatroniConn extends EventEmitter {
         }
     }
 
-    // this returns a func that tracks the "state" of 
-    // our onInterval callback
-    track_async_interval(target) {
-        return async function (...args) {
-            if (target.isRunning) return
-
-            // if we are here, we can invoke our callback!
-            target.isRunning = true
-            await target(...args)
-            target.isRunning = false
-        }
-    }
-
     async srvsinits() {
         for (let i = 0; i < this.Servers.length; i++) {
             try {
@@ -290,7 +276,7 @@ class PatroniConn extends EventEmitter {
         this.healthport = healthport;
 
         servers.forEach((host) => {
-            this.Servers.push(new PatroniServer(host, dbport, healthport, protocol, dbuser, dbpass, database));
+            this.Servers.push(new PatroniServer(host, dbport, healthport, dbuser, dbpass, database, protocol));
         });
 
         // Initialize the server connection by first identifying the roles and statuses of nodes
@@ -303,7 +289,7 @@ class PatroniConn extends EventEmitter {
         //this.chkinit();
 
         for (let i = 0; i < this.Servers.length; i++) {
-            this.emit(EVENT_INITIALIZED, this.Servers[i].Host, this.Servers[i].Role, this.Servers[i].IsRunning);
+            this.emit(EVENT_SRV_INITIALIZED, this.Servers[i].Host, this.Servers[i].Role, this.Servers[i].IsRunning);
         }
     }
 }

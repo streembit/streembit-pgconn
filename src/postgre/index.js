@@ -7,13 +7,13 @@ const IDDLETIMEOUTMILLS = 30000;
 const CONNTIMEOUTMILLS = 5000;
 
 class PostgreSQLHandler {
-    constructor(host, dbport, dbuser, dbpass, database, ssl= false) {
+    constructor(host, dbport, dbuser, dbpass, database, protocol) {
         this.Host = host;        
         this.DbPort = dbport;
         this.DbUser = dbuser;
         this.DbPassword = dbpass;
         this.Database = database;
-        this.IsSSL = ssl;
+        this.IsSSL = protocol === "https" ? true : false;
 
         // the main pool object
         this.Pool = undefined;
